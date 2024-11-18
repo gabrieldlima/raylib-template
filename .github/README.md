@@ -1,71 +1,95 @@
-## 1 - Build raylib from source
-First, clone the raylib repository from [Github](https://github.com/raysan5/raylib):
-```bash
-git clone --depth 1 https://github.com/raysan5/raylib.git raylib
-cd raylib/src/
+# Nix/NixOS raylib setup
+
+1. Begin by downloading the latest stable release of raylib into your project folder. Use the following commands:
+```sh
+cd your-project-folder
+mkdir external
+wget https://github.com/raysan5/raylib/archive/refs/tags/5.5.tar.gz -P external/
+tar xvf external/5.5.tar.gz -C external/
 ```
 
-Create a `shell.nix` file with the following content to set up the necessary environment:
+2. Create a `flake.nix` file in the root folder of your project with the following content:
+```nix
+{
+  description = "Raylib development environment";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  };
+
+  outputs = { self , nixpkgs ,... }: let
+    system = "x86_64-linux";
+  in {
+    devShells."${system}".default = let
+      pkgs = import nixpkgs {
+        inherit system;
+      };
+    in pkgs.mkShell {
+      packages = [
+        pkgs.libGL
+
+        # X11 dependencies
+        pkgs.xorg.libX11
+        pkgs.xorg.libX11.dev
+        pkgs.xorg.libXcursor
+        pkgs.xorg.libXi
+        pkgs.xorg.libXinerama
+        pkgs.xorg.libXrandr
+
+        # Uncomment the line below if you want to build Raylib with web support
+        # pkgs.emscripten
+      ];
+    };
+  };
+}
+```
+
+3. Create the development environment with the dependencies using:
+```sh
+nix develop
+```
+
+</details>
+<details><summary> Or with nix channels </summary>
+
+Alternatively, you can create a `shell.nix` file in the root folder of your project with the following content:
 ```nix
 { pkgs ? import <nixpkgs> {} }:
 
   pkgs.mkShell {
-    nativeBuildInputs = with pkgs; [
-      xorg.libX11.dev
-      xorg.libXcursor
-      xorg.libXrandr
-      xorg.libXinerama
-      xorg.libXi
+    nativeBuildInputs = [
+      pkgs.libGL
+
+      # X11 dependencies
+      pkgs.xorg.libX11
+      pkgs.xorg.libX11.dev
+      pkgs.xorg.libXcursor
+      pkgs.xorg.libXi
+      pkgs.xorg.libXinerama
+      pkgs.xorg.libXrandr
+
+      # Web support (uncomment to enable)
+      # pkgs.emscripten
     ];
 }
 ```
 
-Enter the nix-shell environment:
-```nix
+Then, run the following command to enter the nix-shell:
+```sh
 nix-shell
 ```
+</details>
 
-Next, compile raylib:
-```bash
+4. To build raylib, navigate to the src directory inside the external/raylib-5.5 folder and run make:
+```sh
+cd external/raylib-5.5/src/
 make PLATFORM=PLATFORM_DESKTOP
 ```
 
-Edit the `raylib/src/Makefile` and update the `DESTDIR` variable to your desired directory. I like to put in `$HOME/.local`:
+5. Now you can compile your project with Raylib. The simplest possible Makefile for this would be:
 ```makefile
-DESTDIR ?= $(HOME)/.local
-RAYLIB_INSTALL_PATH ?= $(DESTDIR)/lib
-RAYLIB_H_INSTALL_PATH ?= $(DESTDIR)/include
-```
-
-Install the library to the directories above:
-```bash
-sudo make install
-```
-
-## 2 - Build your game
-Once raylib is installed on your NixOS system, you can compile your game. Create a Makefile like the following to build the game with raylib:
-```makefile
-RAYLIB ?= $(HOME)/.local
-RAYLIB_INCLUDE_DIR ?= $(RAYLIB)/include
-RAYLIB_LIB_DIR ?= $(RAYLIB)/lib
+RAYLIB ?= ./external/raylib-5.5/src/
 
 all:
-  gcc src/main.c -I $(RAYLIB_INCLUDE_DIR) -L $(RAYLIB_LIB_DIR) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+    gcc src/main.c -I $(RAYLIB) -L $(RAYLIB) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 ```
-
-Now, compile and run your game:
-```bash
-make && ./a.out
-```
-## 3 - Neovim config
-If you're using Neovim with [clangd](https://clangd.llvm.org/), you can generate a `compile_commands.json` file by following these steps. First, enter the development environment provided by the [flake.nix](https://github.com/gabrieldlima/raylib-template/blob/main/flake.nix) in this repository:
-```bash
-nix develop
-```
-
-Next, run the following command to generate the compilation database for clangd:
-```bash
-nix run nixpkgs#bear -- -- make
-```
-
-Now, when you enter Neovim, clangd will be able to find the libraries and provide autocomplete functionality. This setup is, in my opinion, the most basic and effective way to configure raylib on NixOS. It's the approach I've chosen, and I haven't encountered any issues so far. I hope this helps you as well!
