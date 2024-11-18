@@ -1,5 +1,5 @@
 {
-  description = "Simple development environment template for Raylib";
+  description = "Raylib development environment";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -13,9 +13,19 @@
         inherit system;
       };
     in pkgs.mkShell {
-      packages = with pkgs; [
-        libGL
-        xorg.libX11
+      packages = [
+        pkgs.libGL
+
+        # X11 dependencies
+        pkgs.xorg.libX11
+        pkgs.xorg.libX11.dev
+        pkgs.xorg.libXcursor
+        pkgs.xorg.libXi
+        pkgs.xorg.libXinerama
+        pkgs.xorg.libXrandr
+
+        # Uncomment the line below if you want to build Raylib with web support
+        # pkgs.emscripten
       ];
     };
   };
