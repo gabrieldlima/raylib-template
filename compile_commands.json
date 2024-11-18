@@ -1,13 +1,13 @@
 [
   {
     "arguments": [
-      "/nix/store/hgw57m0jh2w10jsv8x86ng267pm5sla8-gcc-wrapper-13.3.0/bin/gcc",
+      "/nix/store/3ix5h74n7ar9950vwzp4dxmil70pmx0k-gcc-wrapper-13.3.0/bin/gcc",
       "-c",
       "-I",
-      "/home/gabriel/.local/include",
+      "./external/raylib-5.5/src/",
       "src/main.c"
     ],
-    "directory": "/home/gabriel/Dev/raylib-template",
-    "file": "/home/gabriel/Dev/raylib-template/src/main.c"
+    "directory": "/home/gabriel/dev/your-project-folder",
+    "file": "/home/gabriel/dev/your-project-folder/src/main.c"
   }
 ]
