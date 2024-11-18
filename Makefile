@@ -1,9 +1,4 @@
-RAYLIB ?= $(HOME)/.local
-RAYLIB_INCLUDE_DIR ?= $(RAYLIB)/include
-RAYLIB_LIB_DIR ?= $(RAYLIB)/lib
+RAYLIB ?= ./external/raylib-5.5/src/
 
 all:
-	gcc src/main.c -I $(RAYLIB_INCLUDE_DIR) -L $(RAYLIB_LIB_DIR) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
-
-clean:
-	rm a.out
+    gcc src/main.c -I $(RAYLIB) -L $(RAYLIB) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
